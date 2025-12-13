@@ -1,6 +1,7 @@
 "use client"; // ← クライアントコンポーネントにする宣言
 
 import { useState } from "react"; // ← Reactの状態管理機能をインポート
+import Link from "next/link"; // ← ★ この行を追加！
 
 export default function Home() {
   // useState: 状態（変わる値）を管理する
@@ -12,6 +13,14 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="text-center">
+      <nav className="mb-8">
+        <Link
+          href="/about"
+          className="text-blue-400 hover:text-blue-300 underline transition"
+        >
+          About →
+        </Link>
+      </nav>
         {/* 見出し */}
         <h1 className="text-4xl font-bold text-white mb-4">
           Hello, Next.js! 🚀
