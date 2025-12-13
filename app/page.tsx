@@ -40,6 +40,12 @@ export default function Home() {
         {/* ボタン */}
         <div className="flex gap-4 justify-center">
           <button
+            onClick={() => setCount(count - 1)}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition"
+          >
+            -1 減らす
+          </button>
+          <button
             onClick={() => setCount(count + 1)}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition"
           >
