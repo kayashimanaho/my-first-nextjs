@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"; // ← useEffectを追加！
 import Link from "next/link";
+import { supabase } from "@/lib/supabase"; // ★ 追加
 
 // 名言の型を定義（TypeScriptの機能）
 type Quote = {
@@ -16,18 +17,33 @@ export default function Home() {
 
   
 
-  // ページ読み込み時にlocalStorageから値を取得
+  // ★ Supabaseからカウントを読み込む
   useEffect(() => {
-    const savedCount = localStorage.getItem("count");
-    if (savedCount !== null) {
-      setCount(Number(savedCount)); // 文字列→数値に変換
-    }
-  }, []); // ← 空の配列 = 最初の1回だけ実行
+    const fetchCount = async () => {
+      const { data, error } = await supabase
+        .from("clicks")
+        .select("count")
+        .eq("id", 1)
+        .single();
 
-  // countが変わるたびにlocalStorageに保存
-  useEffect(() => {
-    localStorage.setItem("count", String(count)); // 数値→文字列に変換
-  }, [count]); // ← countが変わったら実行
+      if (data) {
+        setCount(data.count);
+      } else if (error?.code === "PGRST116") {
+        // レコードがなければ作成
+        await supabase.from("clicks").insert({ id: 1, count: 0 });
+      }
+    };
+    fetchCount();
+  }, []);
+
+  // ★ カウントが変わったらSupabaseに保存
+  const updateCount = async (newCount: number) => {
+    setCount(newCount);
+    await supabase
+      .from("clicks")
+      .update({ count: newCount })
+      .eq("id", 1);
+  };
 
   // ★ APIから名言を取得する関数
   const fetchQuote = async () => {
@@ -65,24 +81,25 @@ export default function Home() {
 
         <div className="bg-zinc-900 rounded-2xl p-8 mb-6">
           <p className="text-6xl font-bold text-white mb-4">{count}</p>
-          <p className="text-gray-500">クリック数</p>
+          <p className="text-gray-500">クリック数（Supabaseに保存）</p>
         </div>
 
-        <div className="flex gap-4 justify-center mb-6">
+        <div className="flex gap-4 justify-center mb-8">
+          {/* ★ updateCount関数を使うように変更 */}
           <button
-            onClick={() => setCount(count - 1)}
+            onClick={() => updateCount(count - 1)}
             className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition"
           >
             -1 減らす
           </button>
           <button
-            onClick={() => setCount(count + 1)}
+            onClick={() => updateCount(count + 1)}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition"
           >
             +1 増やす
           </button>
           <button
-            onClick={() => setCount(0)}
+            onClick={() => updateCount(0)}
             className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-full transition"
           >
             リセット
