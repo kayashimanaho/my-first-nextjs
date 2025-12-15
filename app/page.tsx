@@ -3,8 +3,18 @@
 import { useState, useEffect } from "react"; // ← useEffectを追加！
 import Link from "next/link";
 
+// 名言の型を定義（TypeScriptの機能）
+type Quote = {
+  text: string;
+  author: string;
+};
+
 export default function Home() {
   const [count, setCount] = useState(0);
+  const [quote, setQuote] = useState<Quote | null>(null); // ★ 名言を保存
+  const [loading, setLoading] = useState(false); // ★ 読み込み中かどうか
+
+  
 
   // ページ読み込み時にlocalStorageから値を取得
   useEffect(() => {
@@ -18,6 +28,20 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("count", String(count)); // 数値→文字列に変換
   }, [count]); // ← countが変わったら実行
+
+  // ★ APIから名言を取得する関数
+  const fetchQuote = async () => {
+    setLoading(true); // 読み込み開始
+    try {
+      const response = await fetch("/api/quote"); // APIを呼び出し
+      const data = await response.json(); // JSONをパース
+      setQuote(data); // 状態を更新
+    } catch (error) {
+      console.error("エラー:", error);
+    } finally {
+      setLoading(false); // 読み込み終了
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
@@ -44,7 +68,7 @@ export default function Home() {
           <p className="text-gray-500">クリック数</p>
         </div>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center mb-6">
           <button
             onClick={() => setCount(count - 1)}
             className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition"
@@ -62,6 +86,27 @@ export default function Home() {
             className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-full transition"
           >
             リセット
+          </button>
+        </div>
+        {/* ★ 名言セクション（新規追加） */}
+        <div className="bg-zinc-900 rounded-2xl p-8">
+          <h2 className="text-xl font-bold text-white mb-4">💡 今日の名言</h2>
+          
+          {quote ? (
+            <div className="mb-4">
+              <p className="text-lg text-gray-300 italic mb-2">"{quote.text}"</p>
+              <p className="text-gray-500">— {quote.author}</p>
+            </div>
+          ) : (
+            <p className="text-gray-500 mb-4">ボタンを押して名言を取得しよう！</p>
+          )}
+
+          <button
+            onClick={fetchQuote}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition"
+          >
+            {loading ? "読み込み中..." : "🎲 名言を取得"}
           </button>
         </div>
       </div>
