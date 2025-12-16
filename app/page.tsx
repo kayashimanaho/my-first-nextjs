@@ -85,27 +85,62 @@ export default function Home() {
         </div>
 
         <div className="flex gap-4 justify-center mb-8">
-          {/* ★ updateCount関数を使うように変更 */}
+          {/* -1 ボタン */}
           <button
             onClick={() => updateCount(count - 1)}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full transition"
+            className="
+              bg-gradient-to-b from-red-500 to-red-700
+              hover:from-red-400 hover:to-red-600
+              active:from-red-600 active:to-red-800
+              text-white font-bold py-3 px-6 rounded-full
+              shadow-lg shadow-red-500/30
+              hover:shadow-xl hover:shadow-red-500/40
+              hover:-translate-y-0.5
+              active:translate-y-0 active:scale-95
+              transition-all duration-200
+            "
           >
             -1 減らす
           </button>
+
+          {/* +1 ボタン */}
           <button
             onClick={() => updateCount(count + 1)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full transition"
+            className="
+              bg-gradient-to-b from-blue-500 to-blue-700
+              hover:from-blue-400 hover:to-blue-600
+              active:from-blue-600 active:to-blue-800
+              text-white font-bold py-3 px-6 rounded-full
+              shadow-lg shadow-blue-500/30
+              hover:shadow-xl hover:shadow-blue-500/40
+              hover:-translate-y-0.5
+              active:translate-y-0 active:scale-95
+              transition-all duration-200
+            "
           >
             +1 増やす
           </button>
+
+          {/* リセットボタン */}
           <button
             onClick={() => updateCount(0)}
-            className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold py-3 px-6 rounded-full transition"
+            className="
+              bg-gradient-to-b from-zinc-600 to-zinc-800
+              hover:from-zinc-500 hover:to-zinc-700
+              active:from-zinc-700 active:to-zinc-900
+              text-white font-bold py-3 px-6 rounded-full
+              shadow-lg shadow-zinc-500/20
+              hover:shadow-xl hover:shadow-zinc-500/30
+              hover:-translate-y-0.5
+              active:translate-y-0 active:scale-95
+              transition-all duration-200
+            "
           >
             リセット
           </button>
         </div>
-        {/* ★ 名言セクション（新規追加） */}
+
+        {/* 名言セクション */}
         <div className="bg-zinc-900 rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white mb-4">💡 今日の名言</h2>
           
@@ -118,10 +153,24 @@ export default function Home() {
             <p className="text-gray-500 mb-4">ボタンを押して名言を取得しよう！</p>
           )}
 
+          {/* 名言取得ボタン */}
           <button
             onClick={fetchQuote}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-3 px-6 rounded-full transition"
+            className="
+              bg-gradient-to-b from-green-500 to-green-700
+              hover:from-green-400 hover:to-green-600
+              active:from-green-600 active:to-green-800
+              disabled:from-gray-500 disabled:to-gray-700
+              text-white font-bold py-3 px-6 rounded-full
+              shadow-lg shadow-green-500/30
+              hover:shadow-xl hover:shadow-green-500/40
+              disabled:shadow-none
+              hover:-translate-y-0.5
+              active:translate-y-0 active:scale-95
+              disabled:translate-y-0 disabled:scale-100
+              transition-all duration-200
+            "
           >
             {loading ? "読み込み中..." : "🎲 名言を取得"}
           </button>
