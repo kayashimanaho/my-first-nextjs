@@ -62,12 +62,18 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="text-center">
-        <nav className="mb-8">
+        <nav className="mb-8 flex gap-4 justify-center">
           <Link
             href="/about"
             className="text-blue-400 hover:text-blue-300 underline transition"
           >
             About →
+          </Link>
+          <Link
+            href="/todo"
+            className="text-green-400 hover:text-green-300 underline transition"
+          >
+            ToDo →
           </Link>
         </nav>
 
