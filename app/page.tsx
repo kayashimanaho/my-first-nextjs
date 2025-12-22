@@ -75,6 +75,12 @@ export default function Home() {
           >
             ToDo →
           </Link>
+          <Link
+            href="/login"
+            className="text-yellow-400 hover:text-yellow-300 underline transition"
+          >
+            ログイン
+          </Link>
         </nav>
 
         <h1 className="text-4xl font-bold text-white mb-4">

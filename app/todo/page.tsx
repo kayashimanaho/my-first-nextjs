@@ -1,27 +1,50 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { User } from "@supabase/supabase-js";
 
-// ToDoの型定義
 type Todo = {
   id: number;
   text: string;
   completed: boolean;
   created_at: string;
+  user_id: string;
 };
 
 export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
-  // ★ ToDoを取得（Read）
-  const fetchTodos = async () => {
-    const { data, error } = await supabase
+  // ★ ユーザー認証状態をチェック
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        // ログインしていなければログインページへ
+        router.push("/login");
+        return;
+      }
+      
+      setUser(user);
+      fetchTodos(user.id);
+    };
+
+    checkUser();
+  }, [router]);
+
+  // ★ 自分のToDoだけ取得
+  const fetchTodos = async (userId: string) => {
+    const { data } = await supabase
       .from("todos")
       .select("*")
+      .eq("user_id", userId)  // 自分のToDoだけ！
       .order("created_at", { ascending: false });
 
     if (data) {
@@ -30,66 +53,77 @@ export default function TodoPage() {
     setLoading(false);
   };
 
-  // ページ読み込み時にToDoを取得
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  // ★ ToDoを追加（Create）
+  // ★ ToDoを追加（user_id付き）
   const addTodo = async (e: React.FormEvent) => {
-    e.preventDefault(); // ページリロードを防ぐ
-    if (!newTodo.trim()) return; // 空文字は無視
+    e.preventDefault();
+    if (!newTodo.trim() || !user) return;
 
-    const { error } = await supabase
-      .from("todos")
-      .insert({ text: newTodo, completed: false });
+    await supabase.from("todos").insert({
+      text: newTodo,
+      completed: false,
+      user_id: user.id,  // 自分のIDを保存！
+    });
 
-    if (!error) {
-      setNewTodo(""); // 入力欄をクリア
-      fetchTodos(); // リストを更新
-    }
+    setNewTodo("");
+    fetchTodos(user.id);
   };
 
-  // ★ 完了状態を切り替え（Update）
+  // 完了状態を切り替え
   const toggleTodo = async (id: number, completed: boolean) => {
-    const { error } = await supabase
+    await supabase
       .from("todos")
       .update({ completed: !completed })
       .eq("id", id);
 
-    if (!error) {
-      fetchTodos(); // リストを更新
-    }
+    if (user) fetchTodos(user.id);
   };
 
-  // ★ ToDoを削除（Delete）
+  // ToDoを削除
   const deleteTodo = async (id: number) => {
-    const { error } = await supabase
-      .from("todos")
-      .delete()
-      .eq("id", id);
-
-    if (!error) {
-      fetchTodos(); // リストを更新
-    }
+    await supabase.from("todos").delete().eq("id", id);
+    if (user) fetchTodos(user.id);
   };
+
+  // ★ ログアウト
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  // ログインチェック中
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <p className="text-gray-500">読み込み中...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black py-12 px-4">
       <div className="max-w-md mx-auto">
-        {/* ナビゲーション */}
-        <nav className="mb-8 text-center">
+        {/* ヘッダー */}
+        <div className="flex justify-between items-center mb-8">
           <Link
             href="/"
             className="text-blue-400 hover:text-blue-300 underline transition"
           >
-            ← ホームに戻る
+            ← ホーム
           </Link>
-        </nav>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-500 text-sm">{user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="text-red-400 hover:text-red-300 text-sm underline"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
 
         {/* タイトル */}
         <h1 className="text-3xl font-bold text-white text-center mb-8">
-          📝 ToDoリスト
+          📝 マイToDoリスト
         </h1>
 
         {/* 入力フォーム */}
@@ -124,7 +158,7 @@ export default function TodoPage() {
           </div>
         </form>
 
-        {/* ローディング表示 */}
+        {/* ToDoリスト */}
         {loading ? (
           <p className="text-gray-500 text-center">読み込み中...</p>
         ) : todos.length === 0 ? (
@@ -132,58 +166,29 @@ export default function TodoPage() {
             タスクがありません。追加してみましょう！
           </p>
         ) : (
-          /* ToDoリスト */
           <ul className="space-y-3">
             {todos.map((todo) => (
               <li
                 key={todo.id}
-                className="
-                  bg-zinc-900 rounded-xl p-4
-                  flex items-center gap-3
-                  group
-                "
+                className="bg-zinc-900 rounded-xl p-4 flex items-center gap-3 group"
               >
-                {/* チェックボックス */}
                 <button
                   onClick={() => toggleTodo(todo.id, todo.completed)}
                   className={`
-                    w-6 h-6 rounded-full border-2
-                    flex items-center justify-center
-                    transition-all duration-200
-                    ${
-                      todo.completed
-                        ? "bg-green-500 border-green-500"
-                        : "border-zinc-600 hover:border-green-500"
-                    }
+                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+                    ${todo.completed ? "bg-green-500 border-green-500" : "border-zinc-600 hover:border-green-500"}
                   `}
                 >
-                  {todo.completed && (
-                    <span className="text-white text-sm">✓</span>
-                  )}
+                  {todo.completed && <span className="text-white text-sm">✓</span>}
                 </button>
 
-                {/* タスクテキスト */}
-                <span
-                  className={`
-                    flex-1 transition-all duration-200
-                    ${
-                      todo.completed
-                        ? "text-gray-500 line-through"
-                        : "text-white"
-                    }
-                  `}
-                >
+                <span className={`flex-1 ${todo.completed ? "text-gray-500 line-through" : "text-white"}`}>
                   {todo.text}
                 </span>
 
-                {/* 削除ボタン */}
                 <button
                   onClick={() => deleteTodo(todo.id)}
-                  className="
-                    text-gray-500 hover:text-red-500
-                    opacity-0 group-hover:opacity-100
-                    transition-all duration-200
-                  "
+                  className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   🗑️
                 </button>
@@ -192,7 +197,6 @@ export default function TodoPage() {
           </ul>
         )}
 
-        {/* 統計 */}
         {todos.length > 0 && (
           <div className="mt-6 text-center text-gray-500 text-sm">
             {todos.filter((t) => t.completed).length} / {todos.length} 完了
