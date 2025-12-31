@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 type Todo = {
   id: number;
@@ -122,41 +125,36 @@ export default function TodoPage() {
         </div>
 
         {/* タイトル */}
-        <h1 className="text-3xl font-bold text-white text-center mb-8">
-          📝 マイToDoリスト
-        </h1>
+        <Card className="bg-zinc-900 border-zinc-800">
+            <CardHeader>
+                <CardTitle className="text-white">📝 ToDoリスト</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {/* 入力フォーム */}
+                <form onSubmit={addTodo} className="mb-6">
+                <div className="flex gap-2">
+                    <input
+                    type="text"
+                    value={newTodo}
+                    onChange={(e) => setNewTodo(e.target.value)}
+                    placeholder="新しいタスクを入力..."
+                    className="
+                        flex-1 bg-zinc-800 text-white
+                        px-4 py-3 rounded-xl
+                        border border-zinc-700
+                        focus:border-blue-500 focus:outline-none
+                        transition
+                    "
+                    />
+                    <Button type="submit">
+                    追加
+                    </Button>
+                </div>
+                </form>
 
-        {/* 入力フォーム */}
-        <form onSubmit={addTodo} className="mb-6">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              placeholder="新しいタスクを入力..."
-              className="
-                flex-1 bg-zinc-900 text-white
-                px-4 py-3 rounded-xl
-                border border-zinc-700
-                focus:border-blue-500 focus:outline-none
-                transition
-              "
-            />
-            <button
-              type="submit"
-              className="
-                bg-gradient-to-b from-blue-500 to-blue-700
-                hover:from-blue-400 hover:to-blue-600
-                active:scale-95
-                text-white font-bold px-6 py-3 rounded-xl
-                shadow-lg shadow-blue-500/30
-                transition-all duration-200
-              "
-            >
-              追加
-            </button>
-          </div>
-        </form>
+                {/* ここにToDoリストを表示 */}
+            </CardContent>
+            </Card>
 
         {/* ToDoリスト */}
         {loading ? (

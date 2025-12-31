@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"; // ← useEffectを追加！
 import Link from "next/link";
 import { supabase } from "@/lib/supabase"; // ★ 追加
+import { Button } from "@/components/ui/button";
 
 // 名言の型を定義（TypeScriptの機能）
 type Quote = {
@@ -116,22 +117,13 @@ export default function Home() {
           </button>
 
           {/* +1 ボタン */}
-          <button
+          <Button
             onClick={() => updateCount(count + 1)}
-            className="
-              bg-gradient-to-b from-blue-500 to-blue-700
-              hover:from-blue-400 hover:to-blue-600
-              active:from-blue-600 active:to-blue-800
-              text-white font-bold py-3 px-6 rounded-full
-              shadow-lg shadow-blue-500/30
-              hover:shadow-xl hover:shadow-blue-500/40
-              hover:-translate-y-0.5
-              active:translate-y-0 active:scale-95
-              transition-all duration-200
-            "
+            variant="default"
+            size="lg"
           >
             +1 増やす
-          </button>
+          </Button>
 
           {/* リセットボタン */}
           <button
